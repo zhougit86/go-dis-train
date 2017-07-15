@@ -2,6 +2,10 @@ package mapreduce
 
 import (
 	"hash/fnv"
+	"os"
+	"fmt"
+	"encoding/json"
+	"bufio"
 )
 
 // doMap does the job of a map worker: it reads one of the input files
@@ -40,6 +44,52 @@ func doMap(
 	//     err := enc.Encode(&kv)
 	//
 	// Remember to close the file after you have written all the values!
+
+	file, err := os.Open(inFile)
+	if err == nil {
+		fmt.Printf("file:%s opened\n",inFile)
+	} else {
+		fmt.Print(err)
+	}
+
+	inf, err := file.Stat()
+	contents := make([]byte,inf.Size())
+	r:=bufio.NewReader(file)
+	r.Read(contents)
+	defer file.Close()
+
+	//fmt.Printf("Xiaogang %T\n",contents)
+	//fmt.Println(strings.Fields(string(contents)))
+	kv := mapF(inFile,string(contents))
+
+	filesenc := make([]*json.Encoder,nReduce)
+	files := make([]*os.File,nReduce)
+
+	for i := range filesenc {
+		file,err := os.Create(reduceName(jobName, mapTaskNumber, i))
+		if err != nil {
+			fmt.Printf("%s Create Failed\n",reduceName(jobName, mapTaskNumber, nReduce))
+		} else {
+			//fmt.Printf("%s Created\n",reduceName(jobName, mapTaskNumber, nReduce))
+			//fmt.Println(nReduce)
+			filesenc[i] = json.NewEncoder(file)
+			files[i] = file
+		}
+	}
+
+	for _,v := range kv {
+		err := filesenc[ihash(v.Key) % uint32(nReduce)].Encode(&v)
+		if err != nil {
+			fmt.Printf("%s Encode Failed %v\n",v,err)
+		}
+	}
+
+	for _,f := range files {
+		f.Close()
+	}
+
+
+
 }
 
 func ihash(s string) uint32 {
