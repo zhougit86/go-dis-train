@@ -67,6 +67,7 @@ func doMap(
 
 	for i := range filesenc {
 		file,err := os.Create(reduceName(jobName, mapTaskNumber, i))
+		defer file.Close()
 		if err != nil {
 			fmt.Printf("%s Create Failed\n",reduceName(jobName, mapTaskNumber, nReduce))
 		} else {
@@ -84,9 +85,9 @@ func doMap(
 		}
 	}
 
-	for _,f := range files {
-		f.Close()
-	}
+	//for _,f := range files {
+	//	f.Close()
+	//}
 
 
 

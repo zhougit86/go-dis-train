@@ -21,7 +21,7 @@ func mapF(document string, value string) (res []mapreduce.KeyValue) {
 		return !unicode.IsLetter(c)
 	})
 	for _,s := range ss {
-		res = append(res,mapreduce.KeyValue{s,"1"})
+		res = append(res,mapreduce.KeyValue{s,"!"})
 	}
 	return
 }

@@ -41,6 +41,8 @@ func (mr *Master) schedule(phase jobPhase) {
 	//doneChannel := make(chan int, ntasks)
 	for i := 0; i < ntasks; i++ {
 		wg.Add(1)  // 增加WaitGroup的计数
+
+
 		go func(taskNum int, nios int, phase jobPhase) {
 			debug("DEBUG: current taskNum: %v, nios: %v, phase: %v\n", taskNum, nios, phase)
 			for  {
@@ -64,6 +66,8 @@ func (mr *Master) schedule(phase jobPhase) {
 				}  // else 表示失败, 使用新的worker 则会进入下一次for循环重试
 			}
 		}(i, nios, phase)
+
+
 	}
 	wg.Wait()  // 等待所有的任务完成
 
