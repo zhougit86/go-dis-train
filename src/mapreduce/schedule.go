@@ -49,15 +49,17 @@ func (mr *Master) schedule(phase jobPhase) {
 				worker := <-mr.registerChannel  // 获取工作rpc服务器, worker == address
 				debug("DEBUG: current worker port: %v\n", worker)
 
-				//var args DoTaskArgs
-				//args.JobName = mr.jobName
-				//args.File = mr.files[taskNum]
-				//args.Phase = phase
-				//args.TaskNumber = taskNum
-				//args.NumOtherPhase = nios
-				args:=DoTaskArgs{JobName:mr.jobName,File:mr.files[taskNum],
-					Phase:phase,TaskNumber:taskNum,
-					NumOtherPhase:nios}
+				var args DoTaskArgs
+				if phase == mapPhase{
+					args=DoTaskArgs{JobName:mr.jobName,File:mr.files[taskNum],
+						Phase:phase,TaskNumber:taskNum,
+						NumOtherPhase:nios}
+				} else {
+					args=DoTaskArgs{JobName:mr.jobName,File:"",
+						Phase:phase,TaskNumber:taskNum,
+						NumOtherPhase:nios}
+				}
+
 				ok := call(worker, "Worker.DoTask", &args, new(struct{}))
 				if ok {
 					wg.Done()
